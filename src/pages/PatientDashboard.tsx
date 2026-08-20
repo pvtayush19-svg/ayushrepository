@@ -318,14 +318,21 @@ export default function PatientDashboard() {
                         <span className="font-bold text-red-600 dark:text-red-400 uppercase bg-red-50 dark:bg-red-900/30 px-4 py-1.5 rounded-xl border border-red-200 dark:border-red-800">{activeBooking.status === 'en_route' ? 'on route' : activeBooking.status}</span>
                       </div>
                     </div>
-                    <button onClick={async () => {
-                      const { error } = await supabase.from('ambulance_bookings').update({status: 'cancelled'}).eq('id', activeBooking.id);
-                      if (error) toast.error(error.message);
-                      else {
-                        toast.success("Emergency request cancelled.");
-                        setActiveBooking(null);
-                      }
-                    }} className="bg-white dark:bg-slate-800 border-2 border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 px-6 py-3 rounded-2xl font-bold transition-all hover:scale-105 active:scale-95 shadow-sm">
+                    <button 
+                      onClick={async () => {
+                        if (activeBooking.status === 'en_route') {
+                          toast.error("Ambulance is on the way and cannot be cancelled now.");
+                          return;
+                        }
+                        const { error } = await supabase.from('ambulance_bookings').update({status: 'cancelled'}).eq('id', activeBooking.id);
+                        if (error) toast.error(error.message);
+                        else {
+                          toast.success("Emergency request cancelled.");
+                          fetchActiveBooking();
+                        }
+                      }} 
+                      className="bg-white dark:bg-slate-800 border-2 border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 px-6 py-3 rounded-2xl font-bold transition-all hover:scale-105 active:scale-95 shadow-sm"
+                    >
                       Cancel Request
                     </button>
                   </div>

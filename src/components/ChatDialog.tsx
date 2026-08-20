@@ -1,16 +1,75 @@
 import React, { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
-import { X, Video } from 'lucide-react'
+import { X, Video, Ambulance } from 'lucide-react'
+import { toast } from 'sonner'
 import Chat from './Chat'
 import VideoCallDialog from './VideoCallDialog'
 
 export default function ChatDialog({ isOpen, onClose, currentUserId, doctorId, doctorName }: { isOpen: boolean, onClose: () => void, currentUserId: string, doctorId: string, doctorName: string }) {
   const [conversationId, setConversationId] = useState<string | null>(null)
   const [isVideoCallActive, setIsVideoCallActive] = useState(false)
+  const [isBooking, setIsBooking] = useState(false)
 
   useEffect(() => {
     if (isOpen) initConversation()
   }, [isOpen])
+
+  const requestDoctorAmbulance = async () => {
+    if (isBooking) return;
+    setIsBooking(true);
+    try {
+      const { data: provider, error: providerErr } = await supabase
+        .from('ambulance_providers')
+        .select('id')
+        .eq('associated_doctor_id', doctorId)
+        .single();
+
+      if (providerErr || !provider) {
+        toast.error("This doctor/hospital doesn't have a personal ambulance registered.");
+        setIsBooking(false);
+        return;
+      }
+
+      if (!navigator.geolocation) {
+        toast.error("Location not supported by browser.");
+        setIsBooking(false);
+        return;
+      }
+
+      const toastId = toast.loading("Booking doctor's ambulance...");
+
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          const { latitude, longitude } = pos.coords;
+          const { error: bookingErr } = await supabase
+            .from('ambulance_bookings')
+            .insert([{
+              patient_id: currentUserId,
+              ambulance_id: provider.id,
+              pickup_lat: latitude,
+              pickup_lng: longitude,
+              status: 'pending'
+            }]);
+          
+          if (bookingErr) {
+            toast.error("Error booking ambulance: " + bookingErr.message, { id: toastId });
+          } else {
+            toast.success("Ambulance requested successfully! You can track it on your dashboard.", { id: toastId });
+            onClose(); // Optional: close chat or let them stay
+          }
+          setIsBooking(false);
+        },
+        (err) => {
+          toast.error("Failed to get location: " + err.message, { id: toastId });
+          setIsBooking(false);
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      );
+    } catch (err: any) {
+      toast.error(err.message || "An error occurred");
+      setIsBooking(false);
+    }
+  };
 
   const initConversation = async () => {
     // Check if conversation exists
@@ -51,6 +110,13 @@ export default function ChatDialog({ isOpen, onClose, currentUserId, doctorId, d
              </div>
           </div>
           <div className="flex items-center gap-2">
+            <button 
+              onClick={requestDoctorAmbulance} 
+              disabled={isBooking}
+              className="hover:bg-white/20 p-2 rounded-full transition-colors flex items-center gap-2 border border-transparent hover:border-white/30 disabled:opacity-50"
+              title="Book Ambulance through doctor or hospital">
+              <Ambulance size={20} />
+            </button>
             <button 
               onClick={() => setIsVideoCallActive(true)} 
               className="hover:bg-white/20 p-2 rounded-full transition-colors flex items-center gap-2 border border-transparent hover:border-white/30"
