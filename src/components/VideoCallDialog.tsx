@@ -130,10 +130,17 @@ export default function VideoCallDialog({ isOpen, onClose, isCaller, currentUser
           if (isCaller) {
             setCallStatus('ringing')
             // Notify target user via a separate broadcast that they have an incoming call
-            supabase.channel('global-notifications').send({
-              type: 'broadcast',
-              event: 'incoming-call',
-              payload: { callerId: currentUserId, targetId: targetUserId, callerName: 'Patient' } // Name should be dynamic ideally
+            const notifChannel = supabase.channel('global-notifications')
+            notifChannel.subscribe((status) => {
+              if (status === 'SUBSCRIBED') {
+                notifChannel.send({
+                  type: 'broadcast',
+                  event: 'incoming-call',
+                  payload: { callerId: currentUserId, targetId: targetUserId, callerName: 'Patient' } // Name should be dynamic ideally
+                })
+                // We can leave it subscribed or remove it, but best to clean it up after a delay or just leave it
+                setTimeout(() => supabase.removeChannel(notifChannel), 2000)
+              }
             })
             // Caller waits for 'ready' signal from callee to send offer
           } else {

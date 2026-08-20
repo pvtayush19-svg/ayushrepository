@@ -3,8 +3,9 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
 import Map from '@/components/Map'
-import { LogOut, Search, MapPin, MessageCircle, AlertCircle, Ambulance, Activity, Moon, Sun, Stethoscope, Menu, X } from 'lucide-react'
+import { LogOut, Search, MapPin, MessageCircle, AlertCircle, Ambulance, Activity, Moon, Sun, Stethoscope, Menu, X, PhoneIncoming } from 'lucide-react'
 import ChatDialog from '@/components/ChatDialog'
+import VideoCallDialog from '@/components/VideoCallDialog'
 
 export default function PatientDashboard() {
   const { session, user } = useAuth()
@@ -21,6 +22,10 @@ export default function PatientDashboard() {
   
   const [isDarkMode, setIsDarkMode] = useState(() => document.documentElement.classList.contains('dark'))
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  // Video call states
+  const [incomingCall, setIncomingCall] = useState<{ callerId: string, targetId: string, callerName: string } | null>(null)
+  const [activeVideoCall, setActiveVideoCall] = useState<{ callerId: string, targetId: string, targetName: string } | null>(null)
 
   useEffect(() => {
     // Continuously track user's current location
@@ -63,10 +68,23 @@ export default function PatientDashboard() {
         })
         .subscribe()
     }
+
+    // Listen for incoming calls
+    let callChannel: any;
+    if (user) {
+      callChannel = supabase.channel('global-notifications')
+      callChannel.on('broadcast', { event: 'incoming-call' }, (payload: any) => {
+        const { callerId, targetId, callerName } = payload.payload
+        if (targetId === user.id) {
+          setIncomingCall({ callerId, targetId, callerName })
+        }
+      }).subscribe()
+    }
     
     return () => {
       if (watchId) navigator.geolocation.clearWatch(watchId)
       if (bookingSub) supabase.removeChannel(bookingSub)
+      if (callChannel) supabase.removeChannel(callChannel)
     }
   }, [user])
 
@@ -480,6 +498,49 @@ export default function PatientDashboard() {
           currentUserId={user.id} 
           doctorId={selectedDoctor.profile_id} 
           doctorName={selectedDoctor.profiles?.full_name} 
+        />
+      )}
+
+      {/* Incoming Call Modal */}
+      {incomingCall && (
+        <div className="fixed inset-0 bg-black/80 z-[70] flex items-center justify-center p-4 backdrop-blur-md animate-in zoom-in duration-300">
+          <div className="bg-slate-900 border border-slate-700 p-10 rounded-[2.5rem] shadow-2xl flex flex-col items-center max-w-sm w-full text-white relative overflow-hidden">
+             <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/20 rounded-bl-full -z-10 blur-[40px]"></div>
+             <div className="w-28 h-28 bg-blue-500/20 rounded-full flex items-center justify-center mb-8">
+                <div className="w-20 h-20 bg-blue-500/40 rounded-full flex items-center justify-center animate-pulse">
+                   <PhoneIncoming size={40} className="text-blue-300 animate-bounce" />
+                </div>
+             </div>
+             <h3 className="text-3xl font-black mb-2 text-center tracking-tight">Incoming Call</h3>
+             <p className="text-slate-400 mb-10 text-center font-medium"><span className="text-white font-bold">{incomingCall.callerName}</span> is calling for a video consultation...</p>
+             <div className="flex gap-4 w-full">
+               <button 
+                 onClick={() => setIncomingCall(null)}
+                 className="flex-1 py-4 rounded-2xl bg-slate-800 text-white font-bold hover:bg-red-600 transition-colors">
+                 Decline
+               </button>
+               <button 
+                 onClick={() => {
+                   setActiveVideoCall({ callerId: incomingCall.callerId, targetId: incomingCall.targetId, targetName: incomingCall.callerName })
+                   setIncomingCall(null)
+                 }}
+                 className="flex-1 py-4 rounded-2xl bg-green-500 text-white font-black hover:bg-green-400 shadow-lg shadow-green-500/30 transition-all hover:scale-105 active:scale-95">
+                 Accept
+               </button>
+             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Active Video Call */}
+      {activeVideoCall && (
+        <VideoCallDialog 
+          isOpen={true}
+          onClose={() => setActiveVideoCall(null)}
+          isCaller={false}
+          currentUserId={user?.id || ''}
+          targetUserId={activeVideoCall.callerId}
+          targetName={activeVideoCall.targetName}
         />
       )}
     </div>
