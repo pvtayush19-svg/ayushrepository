@@ -49,42 +49,55 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        <img src="/logo.jpg" alt="MedoCare Logo" className="mx-auto h-16 w-16 rounded-full object-cover shadow-md" />
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-slate-900">Sign in to MedoCare</h2>
-        <p className="mt-2 text-center text-sm text-slate-600">For Patients, Doctors, and Ambulance Providers</p>
+    <div className="min-h-screen bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-100 via-indigo-50 to-white flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
+      {/* Decorative blobs */}
+      <div className="absolute top-0 right-0 -translate-y-12 translate-x-1/3 opacity-30 pointer-events-none blur-[100px]">
+         <div className="w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply"></div>
+      </div>
+      <div className="absolute bottom-0 left-0 translate-y-1/3 -translate-x-1/4 opacity-30 pointer-events-none blur-[100px]">
+         <div className="w-96 h-96 bg-indigo-400 rounded-full mix-blend-multiply"></div>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 glass">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="w-24 h-24 mx-auto bg-white p-1 rounded-full shadow-xl shadow-blue-500/10 mb-6">
+          <img src="/logo.jpg" alt="MedoCare Logo" className="w-full h-full rounded-full object-cover" />
+        </div>
+        <h2 className="text-center text-4xl font-black text-slate-900 tracking-tight">Welcome back</h2>
+        <p className="mt-3 text-center text-base text-slate-600 font-medium">Log in to access your MedoCare dashboard</p>
+      </div>
+
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md relative z-10 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-150 fill-mode-both">
+        <div className="bg-white/70 backdrop-blur-xl py-10 px-6 sm:px-12 shadow-2xl shadow-blue-900/5 sm:rounded-3xl border border-white">
           <form className="space-y-6" onSubmit={handleLogin}>
             <div>
-              <label className="block text-sm font-medium text-slate-700">Email address</label>
+              <label className="block text-sm font-bold text-slate-700 mb-1">Email Address</label>
               <div className="mt-1">
                 <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
-                  className="appearance-none block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm" />
+                  className="appearance-none block w-full px-4 py-3 bg-white/50 border border-slate-200 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent sm:text-sm transition-all hover:bg-white" 
+                  placeholder="you@example.com" />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700">Password</label>
+              <label className="block text-sm font-bold text-slate-700 mb-1">Password</label>
               <div className="mt-1">
                 <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)}
-                  className="appearance-none block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm" />
+                  className="appearance-none block w-full px-4 py-3 bg-white/50 border border-slate-200 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent sm:text-sm transition-all hover:bg-white" 
+                  placeholder="••••••••" />
               </div>
             </div>
 
-            <div>
+            <div className="pt-2">
               <button type="submit" disabled={loading}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50">
-                {loading ? 'Signing in...' : 'Sign in'}
+                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-lg shadow-blue-500/30 text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 transition-all hover:scale-[1.02] active:scale-[0.98]">
+                {loading ? 'Authenticating...' : 'Sign In'}
               </button>
             </div>
           </form>
 
-          <div className="mt-6 text-center text-sm border-t border-slate-200 pt-6">
-            Don't have an account? <Link to="/register" className="text-primary hover:text-primary/90 font-medium">Register here</Link>
+          <div className="mt-8 text-center text-sm border-t border-slate-200/60 pt-6">
+            <span className="text-slate-500">Don't have an account?</span>{' '}
+            <Link to="/register" className="text-blue-600 hover:text-blue-700 font-bold transition-colors">Register here</Link>
           </div>
         </div>
       </div>
