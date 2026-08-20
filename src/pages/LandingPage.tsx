@@ -9,7 +9,7 @@ export default function LandingPage() {
       <header className="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-30 border-b border-slate-200 transition-all duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-black bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent flex items-center gap-2 tracking-tight">
-            <Activity className="text-primary" size={28} /> MedoCare
+            <img src="/logo.jpg" alt="MedoCare" className="w-8 h-8 rounded-full object-cover" /> MedoCare
           </h1>
           <div className="flex items-center gap-4">
             <Link to="/login" className="text-slate-600 hover:text-primary font-medium transition-colors px-4 py-2">
@@ -50,7 +50,7 @@ export default function LandingPage() {
           
           {/* Decorative background elements */}
           <div className="absolute top-0 right-0 -translate-y-12 translate-x-1/3 opacity-10 pointer-events-none">
-             <Activity size={600} className="text-primary" />
+             <img src="/logo.jpg" alt="MedoCare" className="w-[600px] h-[600px] object-cover rounded-full grayscale" />
           </div>
           <div className="absolute bottom-0 left-0 translate-y-1/3 -translate-x-1/4 w-[800px] h-[800px] bg-gradient-to-tr from-blue-100 to-transparent rounded-full blur-3xl -z-10"></div>
         </div>
@@ -98,7 +98,7 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="bg-slate-900 text-slate-400 py-12 text-center">
         <div className="max-w-7xl mx-auto px-4 flex flex-col items-center">
-           <Activity className="text-primary mb-4" size={32} />
+           <img src="/logo.jpg" alt="MedoCare" className="w-12 h-12 rounded-full object-cover mb-4 opacity-80" />
            <p className="mb-2">© 2026 MedoCare Portal. All rights reserved.</p>
            <p className="text-sm">Built for robust, real-time healthcare access.</p>
         </div>

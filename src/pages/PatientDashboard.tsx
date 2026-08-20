@@ -166,7 +166,7 @@ export default function PatientDashboard() {
       {/* Mobile Header */}
       <div className="md:hidden flex items-center justify-between p-4 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30">
         <h1 className="text-xl font-black bg-gradient-to-r from-blue-600 to-cyan-500 dark:from-blue-400 dark:to-cyan-400 bg-clip-text text-transparent flex items-center gap-2">
-          <Activity className="text-blue-600 dark:text-blue-400" size={24} /> MedoPatient
+          <img src="/logo.jpg" alt="Logo" className="w-8 h-8 rounded-full object-cover" /> MedoPatient
         </h1>
         <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
           {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -178,7 +178,7 @@ export default function PatientDashboard() {
         <div>
           <div className="p-8">
             <h1 className="text-3xl font-black bg-gradient-to-r from-blue-600 to-cyan-500 dark:from-blue-400 dark:to-cyan-400 bg-clip-text text-transparent flex items-center gap-3 tracking-tight">
-              <Activity className="text-blue-600 dark:text-blue-400" size={36} /> MedoPatient
+              <img src="/logo.jpg" alt="Logo" className="w-10 h-10 rounded-full object-cover" /> MedoPatient
             </h1>
             <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-2 ml-1">Personal Health Portal</p>
           </div>
@@ -239,8 +239,8 @@ export default function PatientDashboard() {
           
           {/* Welcome Banner */}
           <div className="bg-gradient-to-r from-blue-600/10 dark:from-blue-900/40 via-cyan-500/10 dark:via-cyan-900/20 to-transparent p-10 rounded-[2.5rem] border border-blue-500/10 dark:border-blue-800/30 relative overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
-               <Activity size={200} />
+            <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
+               <img src="/logo.jpg" alt="Background Logo" className="w-48 h-48 rounded-full object-cover grayscale blur-sm" />
             </div>
             <h2 className="text-4xl font-black text-slate-900 dark:text-white mb-3">Hello, {user?.user_metadata?.full_name || 'Patient'}!</h2>
             <p className="text-slate-600 dark:text-slate-400 max-w-2xl text-lg font-medium">Find specialized doctors, request emergency ambulances, and track live locations all from your personal health dashboard.</p>

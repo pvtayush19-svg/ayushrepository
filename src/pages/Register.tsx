@@ -39,7 +39,7 @@ export default function Register() {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        <Activity className="mx-auto h-12 w-12 text-primary" />
+        <img src="/logo.jpg" alt="MedoCare Logo" className="mx-auto h-16 w-16 rounded-full object-cover shadow-md" />
         <h2 className="mt-6 text-center text-3xl font-extrabold text-slate-900">Join MedoCare</h2>
       </div>
 
