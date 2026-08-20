@@ -133,21 +133,23 @@ export default function ChatDialog({ isOpen, onClose, currentUserId, doctorId, d
                </div>
              </div>
           )}
-          <div className="bg-red-50 dark:bg-red-900/20 p-3 border-t border-red-100 dark:border-red-900/50 flex flex-row justify-between items-center gap-4">
-             <div className="text-sm text-red-800 dark:text-red-300 font-medium leading-tight">
-               <span className="font-bold block">Emergency?</span>
-               Book Dr. {doctorName}'s personal ambulance
-             </div>
-             <button 
-               onClick={requestDoctorAmbulance} 
-               disabled={isBooking}
-               className="bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-md shadow-red-600/20 flex items-center gap-2 transition-all hover:scale-105 active:scale-95 disabled:opacity-50 shrink-0">
-               <Ambulance size={18}/> 
-               {isBooking ? 'Booking...' : 'Book Now'}
-             </button>
-          </div>
         </div>
       </div>
+
+      {/* FLOATING OPTION OUTSIDE CHAT BOX */}
+      <button 
+        onClick={requestDoctorAmbulance} 
+        disabled={isBooking}
+        className="absolute bottom-6 right-6 md:bottom-10 md:right-10 bg-red-600 hover:bg-red-700 text-white p-4 md:px-6 md:py-4 rounded-full shadow-2xl shadow-red-600/40 flex items-center gap-3 transition-all hover:scale-110 active:scale-95 disabled:opacity-50 z-50"
+      >
+        <div className="bg-white/20 p-2 rounded-full animate-pulse">
+           <Ambulance size={24} className="md:w-7 md:h-7" />
+        </div>
+        <div className="hidden md:flex flex-col items-start text-left">
+           <span className="text-xs text-red-200 font-bold uppercase tracking-wider">Emergency</span>
+           <span className="font-black text-sm">Book Dr. {doctorName}'s Ambulance</span>
+        </div>
+      </button>
       
       {/* Video Call Overlay */}
       {isVideoCallActive && (
