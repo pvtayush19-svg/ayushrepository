@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
-import { LogOut, Activity, Stethoscope, Ambulance, ShieldCheck, Clock, Users, XCircle, Moon, Sun } from 'lucide-react'
+import { LogOut, Activity, Stethoscope, Ambulance, ShieldCheck, Clock, Users, XCircle, Moon, Sun, Menu, X } from 'lucide-react'
 
 export default function AdminDashboard() {
   const { session } = useAuth()
@@ -11,6 +11,7 @@ export default function AdminDashboard() {
   const [ambulances, setAmbulances] = useState<any[]>([])
   const [activeTab, setActiveTab] = useState<'doctors' | 'ambulances'>('doctors')
   const [isDarkMode, setIsDarkMode] = useState(() => document.documentElement.classList.contains('dark'))
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   useEffect(() => {
     fetchData()
@@ -77,10 +78,20 @@ export default function AdminDashboard() {
   const sortedAmbulances = [...ambulances].sort((a, b) => (a.profiles?.full_name || '').localeCompare(b.profiles?.full_name || ''))
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex text-slate-800 dark:text-slate-100 font-sans selection:bg-indigo-500/30 transition-colors duration-300">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col md:flex-row text-slate-800 dark:text-slate-100 font-sans selection:bg-indigo-500/30 transition-colors duration-300">
       
+      {/* Mobile Header */}
+      <div className="md:hidden flex items-center justify-between p-4 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30">
+        <h1 className="text-xl font-black bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 bg-clip-text text-transparent flex items-center gap-2">
+          <ShieldCheck className="text-indigo-600 dark:text-indigo-400" size={24} /> MedoAdmin
+        </h1>
+        <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+          {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
+      </div>
+
       {/* Sidebar Navigation */}
-      <aside className="w-72 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col justify-between sticky top-0 h-screen shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-20 transition-colors duration-300">
+      <aside className={`${mobileMenuOpen ? 'flex' : 'hidden'} md:flex fixed md:sticky top-[73px] md:top-0 left-0 w-full md:w-72 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex-col justify-between h-[calc(100vh-73px)] md:h-screen shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-20 transition-colors duration-300 overflow-y-auto`}>
         <div>
           <div className="p-8">
             <h1 className="text-3xl font-black bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 bg-clip-text text-transparent flex items-center gap-3 tracking-tight">
@@ -92,7 +103,7 @@ export default function AdminDashboard() {
           <nav className="px-4 mt-6 space-y-2">
             <p className="px-4 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4">Verifications</p>
             <button 
-              onClick={() => setActiveTab('doctors')}
+              onClick={() => { setActiveTab('doctors'); setMobileMenuOpen(false); }}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-bold transition-all ${activeTab === 'doctors' ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 shadow-sm shadow-indigo-100 dark:shadow-none' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-slate-200'}`}
             >
               <Stethoscope size={20} />
@@ -101,7 +112,7 @@ export default function AdminDashboard() {
             </button>
 
             <button 
-              onClick={() => setActiveTab('ambulances')}
+              onClick={() => { setActiveTab('ambulances'); setMobileMenuOpen(false); }}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-bold transition-all ${activeTab === 'ambulances' ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 shadow-sm shadow-indigo-100 dark:shadow-none' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-slate-200'}`}
             >
               <Ambulance size={20} />
@@ -127,7 +138,7 @@ export default function AdminDashboard() {
         <div className="absolute top-[-20%] left-[10%] w-[50%] h-[50%] bg-indigo-400/10 rounded-full blur-[120px] pointer-events-none"></div>
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-400/10 rounded-full blur-[120px] pointer-events-none"></div>
 
-        <div className="max-w-6xl mx-auto px-8 py-12 relative z-10 space-y-12">
+        <div className="max-w-6xl mx-auto px-4 md:px-8 py-6 md:py-12 relative z-10 space-y-8 md:space-y-12">
           
           {/* Header & Metrics */}
           <section className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -178,7 +189,7 @@ export default function AdminDashboard() {
                 </h3>
               </div>
               
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto w-[100vw] md:w-auto -mx-6 md:mx-0 px-6 md:px-0">
                 <table className="w-full text-left border-collapse">
                   <thead className="bg-white dark:bg-slate-900">
                     <tr>

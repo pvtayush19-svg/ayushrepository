@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
-import { LogOut, Ambulance, Activity, Moon, Sun, AlertCircle, Settings, Navigation, Clock } from 'lucide-react'
+import { LogOut, Ambulance, Activity, Moon, Sun, AlertCircle, Settings, Navigation, Clock, Menu, X } from 'lucide-react'
 
 export default function AmbulanceDashboard() {
   const { session, user } = useAuth()
@@ -12,6 +12,7 @@ export default function AmbulanceDashboard() {
   const [activeTab, setActiveTab] = useState<'emergencies' | 'vehicle' | 'history'>('emergencies')
   
   const [isDarkMode, setIsDarkMode] = useState(() => document.documentElement.classList.contains('dark'))
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   // Form states
   const [vehicleType, setVehicleType] = useState('Basic Life Support (BLS)')
@@ -186,10 +187,20 @@ export default function AmbulanceDashboard() {
   if (loading) return <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center text-slate-500 dark:text-slate-400">Loading Provider Portal...</div>
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex text-slate-800 dark:text-slate-100 font-sans selection:bg-red-500/30 transition-colors duration-300">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col md:flex-row text-slate-800 dark:text-slate-100 font-sans selection:bg-red-500/30 transition-colors duration-300">
       
+      {/* Mobile Header */}
+      <div className="md:hidden flex items-center justify-between p-4 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30">
+        <h1 className="text-xl font-black bg-gradient-to-r from-red-600 to-orange-500 dark:from-red-500 dark:to-orange-400 bg-clip-text text-transparent flex items-center gap-2">
+          <Ambulance className="text-red-600 dark:text-red-500" size={24} /> MedoRescue
+        </h1>
+        <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+          {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
+      </div>
+
       {/* Sidebar Navigation */}
-      <aside className="w-72 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col justify-between sticky top-0 h-screen shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-20 transition-colors duration-300">
+      <aside className={`${mobileMenuOpen ? 'flex' : 'hidden'} md:flex fixed md:sticky top-[73px] md:top-0 left-0 w-full md:w-72 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex-col justify-between h-[calc(100vh-73px)] md:h-screen shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-20 transition-colors duration-300 overflow-y-auto`}>
         <div>
           <div className="p-8 pb-4">
             <h1 className="text-3xl font-black bg-gradient-to-r from-red-600 to-orange-500 dark:from-red-500 dark:to-orange-400 bg-clip-text text-transparent flex items-center gap-3 tracking-tight">
@@ -217,7 +228,7 @@ export default function AmbulanceDashboard() {
           <nav className="px-4 space-y-2">
             <p className="px-4 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4">Dispatch</p>
             <button 
-              onClick={() => setActiveTab('emergencies')}
+              onClick={() => { setActiveTab('emergencies'); setMobileMenuOpen(false); }}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-bold transition-all ${activeTab === 'emergencies' ? 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 shadow-sm shadow-red-100 dark:shadow-none' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-slate-200'}`}
             >
               <Activity size={20} />
@@ -226,7 +237,7 @@ export default function AmbulanceDashboard() {
             </button>
 
             <button 
-              onClick={() => setActiveTab('vehicle')}
+              onClick={() => { setActiveTab('vehicle'); setMobileMenuOpen(false); }}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-bold transition-all ${activeTab === 'vehicle' ? 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 shadow-sm shadow-red-100 dark:shadow-none' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-slate-200'}`}
             >
               <Settings size={20} />
@@ -234,7 +245,7 @@ export default function AmbulanceDashboard() {
             </button>
 
             <button 
-              onClick={() => setActiveTab('history')}
+              onClick={() => { setActiveTab('history'); setMobileMenuOpen(false); }}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-bold transition-all ${activeTab === 'history' ? 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 shadow-sm shadow-red-100 dark:shadow-none' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-slate-200'}`}
             >
               <Clock size={20} />
@@ -260,7 +271,7 @@ export default function AmbulanceDashboard() {
         <div className="absolute top-[-20%] left-[10%] w-[50%] h-[50%] bg-red-400/10 rounded-full blur-[120px] pointer-events-none"></div>
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-orange-400/10 rounded-full blur-[120px] pointer-events-none"></div>
 
-        <div className="max-w-5xl mx-auto px-8 py-12 relative z-10 space-y-10">
+        <div className="max-w-5xl mx-auto px-4 md:px-8 py-6 md:py-12 relative z-10 space-y-6 md:space-y-10">
           
           <div className="flex justify-between items-end mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div>
@@ -373,7 +384,7 @@ export default function AmbulanceDashboard() {
           )}
 
           {activeTab === 'vehicle' && (
-            <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-sm border border-slate-200/60 dark:border-slate-800 p-8 md:p-12 animate-in fade-in duration-500 transition-colors">
+            <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-sm border border-slate-200/60 dark:border-slate-800 p-6 md:p-12 animate-in fade-in duration-500 transition-colors">
               <h3 className="text-2xl font-black mb-8 text-slate-900 dark:text-white flex items-center gap-3">
                  <Settings className="text-red-600 dark:text-red-500" size={28} /> Edit Vehicle Configuration
               </h3>

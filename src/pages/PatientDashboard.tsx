@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
 import Map from '@/components/Map'
-import { LogOut, Search, MapPin, MessageCircle, AlertCircle, Ambulance, Activity, Moon, Sun, Stethoscope } from 'lucide-react'
+import { LogOut, Search, MapPin, MessageCircle, AlertCircle, Ambulance, Activity, Moon, Sun, Stethoscope, Menu, X } from 'lucide-react'
 import ChatDialog from '@/components/ChatDialog'
 
 export default function PatientDashboard() {
@@ -20,6 +20,7 @@ export default function PatientDashboard() {
   const [selectedAmbulance, setSelectedAmbulance] = useState<any>(null)
   
   const [isDarkMode, setIsDarkMode] = useState(() => document.documentElement.classList.contains('dark'))
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   useEffect(() => {
     // Continuously track user's current location
@@ -142,10 +143,20 @@ export default function PatientDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex text-slate-800 dark:text-slate-100 font-sans selection:bg-blue-500/30 transition-colors duration-300">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col md:flex-row text-slate-800 dark:text-slate-100 font-sans selection:bg-blue-500/30 transition-colors duration-300">
       
+      {/* Mobile Header */}
+      <div className="md:hidden flex items-center justify-between p-4 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30">
+        <h1 className="text-xl font-black bg-gradient-to-r from-blue-600 to-cyan-500 dark:from-blue-400 dark:to-cyan-400 bg-clip-text text-transparent flex items-center gap-2">
+          <Activity className="text-blue-600 dark:text-blue-400" size={24} /> MedoPatient
+        </h1>
+        <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+          {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
+      </div>
+
       {/* Sidebar Navigation */}
-      <aside className="w-72 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col justify-between sticky top-0 h-screen shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-20 transition-colors duration-300">
+      <aside className={`${mobileMenuOpen ? 'flex' : 'hidden'} md:flex fixed md:sticky top-[73px] md:top-0 left-0 w-full md:w-72 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex-col justify-between h-[calc(100vh-73px)] md:h-screen shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-20 transition-colors duration-300 overflow-y-auto`}>
         <div>
           <div className="p-8">
             <h1 className="text-3xl font-black bg-gradient-to-r from-blue-600 to-cyan-500 dark:from-blue-400 dark:to-cyan-400 bg-clip-text text-transparent flex items-center gap-3 tracking-tight">
@@ -164,7 +175,7 @@ export default function PatientDashboard() {
           <nav className="px-4 mt-2 space-y-2">
             <p className="px-4 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4 mt-4">Services</p>
             <button 
-              onClick={() => setActiveTab('doctors')}
+              onClick={() => { setActiveTab('doctors'); setMobileMenuOpen(false); }}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-bold transition-all ${activeTab === 'doctors' ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 shadow-sm shadow-blue-100 dark:shadow-none' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-slate-200'}`}
             >
               <Stethoscope size={20} />
@@ -172,7 +183,7 @@ export default function PatientDashboard() {
             </button>
 
             <button 
-              onClick={() => setActiveTab('ambulances')}
+              onClick={() => { setActiveTab('ambulances'); setMobileMenuOpen(false); }}
               className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl font-bold transition-all ${activeTab === 'ambulances' ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 shadow-sm shadow-blue-100 dark:shadow-none' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-slate-200'}`}
             >
               <span className="flex items-center gap-3"><AlertCircle size={20} /> Ambulance</span>
@@ -180,7 +191,7 @@ export default function PatientDashboard() {
             </button>
 
             <button 
-              onClick={() => setActiveTab('map')}
+              onClick={() => { setActiveTab('map'); setMobileMenuOpen(false); }}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-bold transition-all ${activeTab === 'map' ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 shadow-sm shadow-blue-100 dark:shadow-none' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-slate-200'}`}
             >
               <MapPin size={20} />
@@ -206,7 +217,7 @@ export default function PatientDashboard() {
         <div className="absolute top-[-20%] left-[10%] w-[50%] h-[50%] bg-blue-400/10 rounded-full blur-[120px] pointer-events-none"></div>
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-cyan-400/10 rounded-full blur-[120px] pointer-events-none"></div>
 
-        <div className="max-w-6xl mx-auto px-8 py-12 relative z-10 space-y-10">
+        <div className="max-w-6xl mx-auto px-4 md:px-8 py-6 md:py-12 relative z-10 space-y-6 md:space-y-10">
           
           {/* Welcome Banner */}
           <div className="bg-gradient-to-r from-blue-600/10 dark:from-blue-900/40 via-cyan-500/10 dark:via-cyan-900/20 to-transparent p-10 rounded-[2.5rem] border border-blue-500/10 dark:border-blue-800/30 relative overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -428,7 +439,7 @@ export default function PatientDashboard() {
                 </div>
               </div>
               <Map 
-                className="h-[700px] w-full rounded-[2rem] border-[6px] border-slate-50 dark:border-slate-800 shadow-inner"
+                className="h-[400px] md:h-[700px] w-full rounded-[2rem] border-[6px] border-slate-50 dark:border-slate-800 shadow-inner"
                 center={location || { lat: 20.5937, lng: 78.9629 }} 
                 markers={[
                   ...(location ? [{
