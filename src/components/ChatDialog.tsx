@@ -110,13 +110,7 @@ export default function ChatDialog({ isOpen, onClose, currentUserId, doctorId, d
              </div>
           </div>
           <div className="flex items-center gap-2">
-            <button 
-              onClick={requestDoctorAmbulance} 
-              disabled={isBooking}
-              className="hover:bg-white/20 p-2 rounded-full transition-colors flex items-center gap-2 border border-transparent hover:border-white/30 disabled:opacity-50"
-              title="Book Ambulance through doctor or hospital">
-              <Ambulance size={20} />
-            </button>
+
             <button 
               onClick={() => setIsVideoCallActive(true)} 
               className="hover:bg-white/20 p-2 rounded-full transition-colors flex items-center gap-2 border border-transparent hover:border-white/30"
@@ -126,19 +120,32 @@ export default function ChatDialog({ isOpen, onClose, currentUserId, doctorId, d
             <button onClick={onClose} className="hover:bg-red-500/80 p-2 rounded-full transition-colors"><X size={20} /></button>
           </div>
         </div>
-        <div className="flex-1 bg-slate-50 dark:bg-slate-900 relative">
+        <div className="flex-1 bg-slate-50 dark:bg-slate-900 relative flex flex-col">
           {conversationId ? (
-             <div className="absolute inset-0">
+             <div className="flex-1 relative">
                <Chat conversationId={conversationId} currentUserId={currentUserId} />
              </div>
           ) : (
-             <div className="h-full flex items-center justify-center">
+             <div className="flex-1 flex items-center justify-center">
                <div className="animate-pulse flex flex-col items-center">
                  <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
                  <p className="text-slate-500">Loading secure chat...</p>
                </div>
              </div>
           )}
+          <div className="bg-red-50 dark:bg-red-900/20 p-3 border-t border-red-100 dark:border-red-900/50 flex flex-row justify-between items-center gap-4">
+             <div className="text-sm text-red-800 dark:text-red-300 font-medium leading-tight">
+               <span className="font-bold block">Emergency?</span>
+               Book Dr. {doctorName}'s personal ambulance
+             </div>
+             <button 
+               onClick={requestDoctorAmbulance} 
+               disabled={isBooking}
+               className="bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-md shadow-red-600/20 flex items-center gap-2 transition-all hover:scale-105 active:scale-95 disabled:opacity-50 shrink-0">
+               <Ambulance size={18}/> 
+               {isBooking ? 'Booking...' : 'Book Now'}
+             </button>
+          </div>
         </div>
       </div>
       
