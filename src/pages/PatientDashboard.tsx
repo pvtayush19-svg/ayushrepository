@@ -22,6 +22,7 @@ export default function PatientDashboard() {
   
   const [isDarkMode, setIsDarkMode] = useState(() => document.documentElement.classList.contains('dark'))
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [isBooking, setIsBooking] = useState(false)
 
   // Video call states
   const [incomingCall, setIncomingCall] = useState<{ callerId: string, targetId: string, callerName: string } | null>(null)
@@ -156,6 +157,54 @@ export default function PatientDashboard() {
     }
   }
 
+  const requestDoctorAmbulance = async (doctorId: string) => {
+    if (isBooking || !user) return;
+    setIsBooking(true);
+    try {
+      const { data: provider, error: providerErr } = await supabase
+        .from('ambulance_providers')
+        .select('id')
+        .eq('associated_doctor_id', doctorId)
+        .single();
+
+      if (providerErr || !provider) {
+        toast.error("This doctor/hospital doesn't have a personal ambulance registered.");
+        setIsBooking(false);
+        return;
+      }
+
+      if (!location) {
+        toast.error("Waiting for GPS location...");
+        setIsBooking(false);
+        return;
+      }
+
+      const toastId = toast.loading("Booking doctor's ambulance...");
+
+      const { error: bookingErr } = await supabase
+        .from('ambulance_bookings')
+        .insert([{
+          patient_id: user.id,
+          ambulance_id: provider.id,
+          pickup_lat: location.lat,
+          pickup_lng: location.lng,
+          status: 'pending'
+        }]);
+      
+      if (bookingErr) {
+        toast.error("Error booking ambulance: " + bookingErr.message, { id: toastId });
+      } else {
+        toast.success("Ambulance requested successfully!", { id: toastId });
+        fetchActiveBooking();
+        setActiveTab('ambulances');
+      }
+      setIsBooking(false);
+    } catch (err: any) {
+      toast.error(err.message || "An error occurred");
+      setIsBooking(false);
+    }
+  };
+
   const handleLogout = async () => {
     await supabase.auth.signOut()
   }
@@ -263,7 +312,13 @@ export default function PatientDashboard() {
                            <Stethoscope size={28} />
                         </div>
                         <div className="flex flex-col items-end gap-2">
-                          <span className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-bold px-3 py-1 rounded-full">{doc.experience_years} YRS EXP</span>
+                          <button 
+                            onClick={() => requestDoctorAmbulance(doc.profile_id)}
+                            disabled={isBooking}
+                            className="bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-xs font-bold px-3 py-1.5 rounded-full hover:bg-red-200 dark:hover:bg-red-900/50 flex items-center gap-1.5 transition-colors disabled:opacity-50 border border-red-200 dark:border-red-800 shadow-sm"
+                          >
+                            <Ambulance size={14} /> Book Ambulance
+                          </button>
                           {doc.is_available ? (
                             <span className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-[10px] font-black px-2 py-0.5 rounded-full flex items-center gap-1 border border-green-200 dark:border-green-800 shadow-sm"><span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span> ONLINE</span>
                           ) : (
