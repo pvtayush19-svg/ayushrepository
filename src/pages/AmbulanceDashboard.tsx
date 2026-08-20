@@ -133,7 +133,7 @@ export default function AmbulanceDashboard() {
     let lat = null
     let lng = null
     try {
-      const pos = await new Promise<GeolocationPosition>((res, rej) => navigator.geolocation.getCurrentPosition(res, rej))
+      const pos = await new Promise<GeolocationPosition>((res, rej) => navigator.geolocation.getCurrentPosition(res, rej, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }))
       lat = pos.coords.latitude
       lng = pos.coords.longitude
     } catch(err) {
