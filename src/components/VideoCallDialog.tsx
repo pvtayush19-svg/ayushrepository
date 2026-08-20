@@ -25,6 +25,7 @@ export default function VideoCallDialog({ isOpen, onClose, isCaller, currentUser
   
   const [localStream, setLocalStream] = useState<MediaStream | null>(null)
   const [peerConnection, setPeerConnection] = useState<RTCPeerConnection | null>(null)
+  const iceCandidateQueue = useRef<RTCIceCandidateInit[]>([])
   
   const [isMuted, setIsMuted] = useState(false)
   const [isVideoOff, setIsVideoOff] = useState(false)
@@ -75,18 +76,42 @@ export default function VideoCallDialog({ isOpen, onClose, isCaller, currentUser
         const { type, data, from } = payload.payload
         if (from === currentUserId) return // Ignore own messages
 
-        if (type === 'offer' && !isCaller) {
+        if (type === 'ready' && isCaller) {
+          // Callee is ready, caller generates offer
+          const offer = await pc.createOffer()
+          await pc.setLocalDescription(offer)
+          channel.send({ type: 'broadcast', event: 'signaling', payload: { type: 'offer', data: offer, from: currentUserId } })
+        }
+        else if (type === 'offer' && !isCaller) {
           await pc.setRemoteDescription(new RTCSessionDescription(data))
+          
+          // Process queued ICE candidates
+          for (const candidate of iceCandidateQueue.current) {
+            await pc.addIceCandidate(new RTCIceCandidate(candidate))
+          }
+          iceCandidateQueue.current = []
+
           const answer = await pc.createAnswer()
           await pc.setLocalDescription(answer)
           channel.send({ type: 'broadcast', event: 'signaling', payload: { type: 'answer', data: answer, from: currentUserId } })
         } 
         else if (type === 'answer' && isCaller) {
           await pc.setRemoteDescription(new RTCSessionDescription(data))
+          
+          // Process queued ICE candidates
+          for (const candidate of iceCandidateQueue.current) {
+            await pc.addIceCandidate(new RTCIceCandidate(candidate))
+          }
+          iceCandidateQueue.current = []
+
           setCallStatus('connected')
         } 
         else if (type === 'ice-candidate') {
-          await pc.addIceCandidate(new RTCIceCandidate(data))
+          if (pc.remoteDescription) {
+            await pc.addIceCandidate(new RTCIceCandidate(data))
+          } else {
+            iceCandidateQueue.current.push(data)
+          }
         }
         else if (type === 'end-call') {
           handleRemoteHangup()
@@ -110,10 +135,10 @@ export default function VideoCallDialog({ isOpen, onClose, isCaller, currentUser
               event: 'incoming-call',
               payload: { callerId: currentUserId, targetId: targetUserId, callerName: 'Patient' } // Name should be dynamic ideally
             })
-
-            const offer = await pc.createOffer()
-            await pc.setLocalDescription(offer)
-            channel.send({ type: 'broadcast', event: 'signaling', payload: { type: 'offer', data: offer, from: currentUserId } })
+            // Caller waits for 'ready' signal from callee to send offer
+          } else {
+            // Callee is now subscribed and ready, signal the caller
+            channel.send({ type: 'broadcast', event: 'signaling', payload: { type: 'ready', from: currentUserId } })
           }
         }
       })
@@ -153,15 +178,17 @@ export default function VideoCallDialog({ isOpen, onClose, isCaller, currentUser
 
   const toggleMute = () => {
     if (localStream) {
-      localStream.getAudioTracks().forEach(track => track.enabled = !track.enabled)
-      setIsMuted(!isMuted)
+      const newMuted = !isMuted
+      localStream.getAudioTracks().forEach(track => track.enabled = !newMuted)
+      setIsMuted(newMuted)
     }
   }
 
   const toggleVideo = () => {
     if (localStream) {
-      localStream.getVideoTracks().forEach(track => track.enabled = !track.enabled)
-      setIsVideoOff(!isVideoOff)
+      const newVideoOff = !isVideoOff
+      localStream.getVideoTracks().forEach(track => track.enabled = !newVideoOff)
+      setIsVideoOff(newVideoOff)
     }
   }
 
