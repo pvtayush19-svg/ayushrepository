@@ -21,13 +21,32 @@ type Location = {
 
 type MapProps = {
   center?: Location
-  markers?: Array<{ id: string; lat: number; lng: number; title: string; subtitle?: string; type?: 'user' | 'doctor' | 'ambulance' }>
+  markers?: Array<{ id: string; lat: number; lng: number; title: string; subtitle?: string; type?: 'user' | 'doctor' | 'ambulance', avatar_url?: string }>
   onLocationSelect?: (loc: Location) => void
   interactive?: boolean
   className?: string
 }
 
-const getIcon = (type?: 'user' | 'doctor' | 'ambulance') => {
+const getIcon = (type?: 'user' | 'doctor' | 'ambulance', avatarUrl?: string) => {
+  if (avatarUrl) {
+    return L.divIcon({
+      className: 'bg-transparent border-none',
+      html: `<div style="
+        width: 40px; 
+        height: 40px; 
+        border-radius: 50%; 
+        border: 3px solid white; 
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+        background-image: url('${avatarUrl}');
+        background-size: cover;
+        background-position: center;
+        transform: translate(-50%, -100%);
+      "></div>`,
+      iconSize: [40, 40],
+      iconAnchor: [0, 0]
+    })
+  }
+
   let emoji = '📍'
   if (type === 'user') emoji = '👤'
   else if (type === 'doctor') emoji = '👨‍⚕️'
@@ -80,7 +99,7 @@ export default function Map({ center = { lat: 0, lng: 0 }, markers = [], onLocat
         <MapUpdater center={currentCenter} />
         {interactive && onLocationSelect && <LocationPicker onSelect={onLocationSelect} />}
         {markers.map((marker) => (
-          <Marker key={marker.id} position={[marker.lat, marker.lng]} icon={getIcon(marker.type)}>
+          <Marker key={marker.id} position={[marker.lat, marker.lng]} icon={getIcon(marker.type, marker.avatar_url)}>
             <Popup>
               <strong>{marker.title}</strong>
               {marker.subtitle && <p>{marker.subtitle}</p>}

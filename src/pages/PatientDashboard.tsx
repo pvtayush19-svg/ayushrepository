@@ -538,7 +538,8 @@ export default function PatientDashboard() {
                     lng: d.location_lng,
                     title: `Dr. ${d.profiles?.full_name}`,
                     subtitle: `${d.specialization} • ${d.clinic_hospital}`,
-                    type: 'doctor' as const
+                    type: 'doctor' as const,
+                    avatar_url: d.profiles?.avatar_url
                   })),
                   ...ambulances.filter(a => a.location_lat && a.location_lng).map(a => ({
                     id: `amb-${a.id}`,

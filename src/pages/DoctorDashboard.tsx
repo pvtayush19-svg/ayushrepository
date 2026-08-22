@@ -23,6 +23,8 @@ export default function DoctorDashboard() {
   const [clinic, setClinic] = useState('')
   const [fee, setFee] = useState('')
   const [isAvailable, setIsAvailable] = useState(true)
+  const [avatarUrl, setAvatarUrl] = useState('')
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
 
   // Video call states
   const [incomingCall, setIncomingCall] = useState<{ callerId: string, targetId: string, callerName: string } | null>(null)
@@ -69,6 +71,7 @@ export default function DoctorDashboard() {
 
     const { data: pData } = await supabase.from('profiles').select('*').eq('id', user.id).single()
     setProfile(pData)
+    if (pData?.avatar_url) setAvatarUrl(pData.avatar_url)
 
     const { data: dData } = await supabase.from('doctors').select('*').eq('profile_id', user.id).single()
     if (dData) {
@@ -143,6 +146,32 @@ export default function DoctorDashboard() {
     }
   }
 
+  const uploadAvatar = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      setUploadingAvatar(true)
+      if (!e.target.files || e.target.files.length === 0) return
+      
+      const file = e.target.files[0]
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${user?.id}-${Math.random()}.${fileExt}`
+
+      const { error: uploadError } = await supabase.storage.from('Image').upload(fileName, file)
+      if (uploadError) throw uploadError
+
+      const { data } = supabase.storage.from('Image').getPublicUrl(fileName)
+      
+      const { error: updateError } = await supabase.from('profiles').update({ avatar_url: data.publicUrl }).eq('id', user?.id)
+      if (updateError) throw updateError
+      
+      setAvatarUrl(data.publicUrl)
+      toast.success('Profile picture updated successfully!')
+    } catch (error: any) {
+      toast.error(error.message)
+    } finally {
+      setUploadingAvatar(false)
+    }
+  }
+
   const toggleOnlineStatus = async () => {
     if (!doctorDetails) {
       toast.error("Please save your professional details first!")
@@ -191,7 +220,16 @@ export default function DoctorDashboard() {
 
           <div className="px-8 pb-6 border-b border-slate-100 dark:border-slate-800 mb-4">
             <div className="flex flex-col gap-2">
-              <p className="font-bold text-slate-900 dark:text-white">Dr. {profile?.full_name}</p>
+              <div className="flex items-center gap-4 mb-2">
+                {avatarUrl ? (
+                   <img src={avatarUrl} alt="Doctor Avatar" className="w-12 h-12 rounded-full object-cover border-2 border-indigo-200 dark:border-indigo-800" />
+                ) : (
+                   <div className="w-12 h-12 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-500 font-bold text-lg">
+                      {profile?.full_name?.charAt(0)}
+                   </div>
+                )}
+                <p className="font-bold text-slate-900 dark:text-white leading-tight">Dr. {profile?.full_name}</p>
+              </div>
               
               <div className="flex items-center gap-2 mt-2">
                 <span className={`text-xs font-bold px-2 py-1 rounded-md ${isAvailable ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'}`}>
@@ -313,6 +351,24 @@ export default function DoctorDashboard() {
                  <UserCheck className="text-indigo-600 dark:text-indigo-400" size={28} /> Edit Professional Details
               </h3>
               
+              <div className="mb-8 flex items-center gap-6 p-6 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-200/60 dark:border-slate-700">
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="Avatar" className="w-24 h-24 rounded-full object-cover shadow-md border-4 border-white dark:border-slate-700" />
+                ) : (
+                  <div className="w-24 h-24 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center text-slate-400">
+                    <User size={40} />
+                  </div>
+                )}
+                <div>
+                  <h4 className="font-bold text-slate-900 dark:text-white mb-1">Profile Picture</h4>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">This will be shown to patients on the live map.</p>
+                  <label className="cursor-pointer bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:border-indigo-500 hover:text-indigo-600 px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-all inline-block">
+                    {uploadingAvatar ? 'Uploading...' : 'Upload Image'}
+                    <input type="file" accept="image/*" className="hidden" onChange={uploadAvatar} disabled={uploadingAvatar} />
+                  </label>
+                </div>
+              </div>
+
               <form onSubmit={saveProfile} className="space-y-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div>
