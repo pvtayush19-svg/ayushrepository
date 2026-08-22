@@ -11,6 +11,9 @@ export default function PatientDashboard() {
   const { session, user } = useAuth()
   const [activeTab, setActiveTab] = useState<'doctors' | 'ambulances' | 'map'>('doctors')
   const [doctors, setDoctors] = useState<any[]>([])
+  
+  // State for clinic ambulances
+  const [clinicAmbulances, setClinicAmbulances] = useState<string[]>([])
   const [ambulances, setAmbulances] = useState<any[]>([])
   const [location, setLocation] = useState<{lat: number, lng: number} | null>(null)
   
@@ -118,9 +121,19 @@ export default function PatientDashboard() {
       .from('doctors')
       .select('*, profiles:profile_id(full_name, avatar_url, email)')
       .eq('is_verified', true)
+
+    if (data) {
+      setDoctors(data)
+    }
+
+    const { data: ambData } = await supabase
+      .from('ambulance_providers')
+      .select('associated_doctor_id')
+      .not('associated_doctor_id', 'is', null)
     
-    if (error) console.error(error)
-    else setDoctors(data || [])
+    if (ambData) {
+      setClinicAmbulances(ambData.map((a: any) => a.associated_doctor_id))
+    }
   }
 
   const fetchAmbulances = async () => {
@@ -327,15 +340,17 @@ export default function PatientDashboard() {
                          <p className="text-slate-600 dark:text-slate-400 text-sm flex items-center gap-3">
                            <span className="font-bold text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-lg">₹{doc.consultation_fee}</span> <span className="font-medium">Consultation Fee</span>
                          </p>
-                         <div className="pt-2">
-                           <button 
-                             onClick={() => requestDoctorAmbulance(doc.profile_id)}
-                             disabled={isBooking}
-                             className="w-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 font-bold py-2.5 rounded-xl hover:bg-red-200 dark:hover:bg-red-900/50 flex items-center justify-center gap-2 transition-colors disabled:opacity-50 border border-red-200 dark:border-red-800 shadow-sm"
-                           >
-                             <Ambulance size={18} /> Book Ambulance for Clinic
-                           </button>
-                         </div>
+                         {clinicAmbulances.includes(doc.profile_id) && (
+                           <div className="pt-2">
+                             <button 
+                               onClick={() => requestDoctorAmbulance(doc.profile_id)}
+                               disabled={isBooking}
+                               className="w-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 font-bold py-2.5 rounded-xl hover:bg-red-200 dark:hover:bg-red-900/50 flex items-center justify-center gap-2 transition-colors disabled:opacity-50 border border-red-200 dark:border-red-800 shadow-sm"
+                             >
+                               <Ambulance size={18} /> Book Ambulance for Clinic
+                             </button>
+                           </div>
+                         )}
                       </div>
                     </div>
                     

@@ -12,6 +12,9 @@ export default function DoctorDashboard() {
   const [doctorDetails, setDoctorDetails] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'inbox' | 'profile'>('inbox')
+  const [linkedAmbulance, setLinkedAmbulance] = useState<any>(null)
+  const [ambulanceEmail, setAmbulanceEmail] = useState('')
+  const [linkingAmbulance, setLinkingAmbulance] = useState(false)
   
   const [isDarkMode, setIsDarkMode] = useState(() => document.documentElement.classList.contains('dark'))
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -93,6 +96,9 @@ export default function DoctorDashboard() {
       setActiveTab('profile') // Force edit if no details yet
     }
 
+    const { data: ambData } = await supabase.from('ambulance_providers').select('*, profiles:profile_id(full_name, email)').eq('associated_doctor_id', user.id).maybeSingle()
+    setLinkedAmbulance(ambData || null)
+
     // Fetch inbox patients
     const { data: convData } = await supabase
       .from('conversations')
@@ -169,6 +175,36 @@ export default function DoctorDashboard() {
       toast.error(error.message)
     } finally {
       setUploadingAvatar(false)
+    }
+  }
+
+  const handleLinkAmbulance = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLinkingAmbulance(true)
+    try {
+      const { error } = await supabase.rpc('link_ambulance_to_doctor', { ambulance_email: ambulanceEmail })
+      if (error) throw error
+      toast.success('Ambulance linked successfully!')
+      setAmbulanceEmail('')
+      fetchProfile()
+    } catch (error: any) {
+      toast.error(error.message)
+    } finally {
+      setLinkingAmbulance(false)
+    }
+  }
+
+  const handleUnlinkAmbulance = async () => {
+    setLinkingAmbulance(true)
+    try {
+      const { error } = await supabase.rpc('unlink_ambulance_from_doctor')
+      if (error) throw error
+      toast.success('Ambulance unlinked successfully!')
+      setLinkedAmbulance(null)
+    } catch (error: any) {
+      toast.error(error.message)
+    } finally {
+      setLinkingAmbulance(false)
     }
   }
 
@@ -407,6 +443,37 @@ export default function DoctorDashboard() {
                   </button>
                 </div>
               </form>
+
+              {/* Ambulance Linking Section */}
+              <div className="mt-12 pt-12 border-t border-slate-200 dark:border-slate-800">
+                <h3 className="text-2xl font-black mb-6 text-slate-900 dark:text-white flex items-center gap-3">
+                   <Stethoscope className="text-red-500" size={28} /> Clinic Ambulance Link
+                </h3>
+                
+                {linkedAmbulance ? (
+                   <div className="p-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-900/50 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                     <div>
+                       <p className="font-bold text-green-800 dark:text-green-400 mb-1">Ambulance Linked</p>
+                       <p className="text-sm font-medium text-green-700 dark:text-green-500">
+                         {linkedAmbulance.profiles?.full_name} ({linkedAmbulance.profiles?.email})
+                       </p>
+                     </div>
+                     <button onClick={handleUnlinkAmbulance} disabled={linkingAmbulance} className="px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-bold text-slate-600 hover:text-red-500 hover:border-red-200 transition-colors disabled:opacity-50">
+                       Unlink Ambulance
+                     </button>
+                   </div>
+                ) : (
+                   <form onSubmit={handleLinkAmbulance} className="p-6 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl">
+                     <p className="text-sm text-slate-600 dark:text-slate-400 mb-4 font-medium">Link a registered ambulance driver to your clinic. Patients will be able to book this ambulance directly from your profile.</p>
+                     <div className="flex flex-col sm:flex-row gap-4">
+                       <input required type="email" value={ambulanceEmail} onChange={e => setAmbulanceEmail(e.target.value)} placeholder="Enter Ambulance Driver Email" className="flex-1 px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all" />
+                       <button type="submit" disabled={linkingAmbulance} className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-600/30 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50">
+                         {linkingAmbulance ? 'Linking...' : 'Link Ambulance'}
+                       </button>
+                     </div>
+                   </form>
+                )}
+              </div>
             </div>
           )}
         </div>
