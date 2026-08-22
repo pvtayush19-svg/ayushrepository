@@ -1,13 +1,20 @@
 import React from 'react'
-import { Navigate, Outlet } from 'react-router-dom'
+import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 
 export const ProtectedRoute = ({ allowedRoles }: { allowedRoles?: string[] }) => {
   const { session, role, loading } = useAuth()
 
+  const location = useLocation()
+
   if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>
   
-  if (!session) return <Navigate to="/login" replace />
+  if (!session) {
+    if (location.pathname.startsWith('/admin')) {
+      return <Navigate to="/admin/login" replace />
+    }
+    return <Navigate to="/login" replace />
+  }
 
   if (allowedRoles && role && !allowedRoles.includes(role)) {
     // If not allowed, send them to their respective dashboard
