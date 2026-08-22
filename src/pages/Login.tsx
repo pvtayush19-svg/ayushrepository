@@ -41,6 +41,22 @@ export default function Login() {
          throw new Error("Admins cannot use this login page. Please use the Admin Portal.")
       }
       
+      if (userRole === 'doctor') {
+         const { data: doctor } = await supabase.from('doctors').select('is_verified').eq('profile_id', data.user.id).single()
+         if (doctor && !doctor.is_verified) {
+             await supabase.auth.signOut()
+             throw new Error('Your application is still under review by the admin. Please wait for approval before logging in.')
+         }
+      }
+
+      if (userRole === 'ambulance') {
+         const { data: ambulance } = await supabase.from('ambulance_providers').select('is_verified').eq('profile_id', data.user.id).single()
+         if (ambulance && !ambulance.is_verified) {
+             await supabase.auth.signOut()
+             throw new Error('Your application is still under review by the admin. Please wait for approval before logging in.')
+         }
+      }
+      
       toast.success('Logged in successfully')
     } catch (error: any) {
       toast.error(error.message || 'Failed to login')
