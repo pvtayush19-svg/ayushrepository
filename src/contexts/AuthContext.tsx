@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { Session, User } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
+import { toast } from 'sonner'
 
 type AuthContextType = {
   session: Session | null
@@ -52,7 +53,29 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .single()
       
       if (error) throw error
-      setRole(data?.role || null)
+      const userRole = data?.role || null
+      
+      if (userRole === 'doctor') {
+        const { data: docData } = await supabase.from('doctors').select('is_verified').eq('profile_id', userId).maybeSingle()
+        if (docData && !docData.is_verified) {
+          toast.error('Your application is pending admin approval. You cannot log in yet.')
+          await supabase.auth.signOut()
+          setRole(null)
+          return
+        }
+      }
+
+      if (userRole === 'ambulance') {
+        const { data: ambData } = await supabase.from('ambulance_providers').select('is_verified').eq('profile_id', userId).maybeSingle()
+        if (ambData && !ambData.is_verified) {
+          toast.error('Your application is pending admin approval. You cannot log in yet.')
+          await supabase.auth.signOut()
+          setRole(null)
+          return
+        }
+      }
+
+      setRole(userRole)
     } catch (error) {
       console.error('Error fetching role, clearing role for security:', error)
       setRole(null) // Security Fix: Fail closed instead of defaulting to patient
