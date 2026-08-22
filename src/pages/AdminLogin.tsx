@@ -12,6 +12,13 @@ export default function AdminLogin() {
   const navigate = useNavigate()
   const { session, role } = useAuth()
 
+  // Redirect if already logged in and role is verified
+  React.useEffect(() => {
+    if (session && role === 'admin') {
+      navigate('/admin/dashboard')
+    }
+  }, [session, role, navigate])
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -33,11 +40,8 @@ export default function AdminLogin() {
       }
       
       toast.success('Admin login successful. Redirecting...')
+      // Wait for AuthContext to update and trigger the useEffect redirect
       
-      // Allow context to update briefly, then navigate
-      setTimeout(() => {
-        navigate('/admin/dashboard')
-      }, 500)
     } catch (error: any) {
       toast.error(error.message || 'Failed to login')
     } finally {
