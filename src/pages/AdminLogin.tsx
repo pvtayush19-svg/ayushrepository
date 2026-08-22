@@ -40,10 +40,8 @@ export default function AdminLogin() {
       }
       
       toast.success('Admin login successful. Redirecting...')
-      // Wait for AuthContext to update briefly, then navigate as a fallback
-      setTimeout(() => {
-         window.location.href = '/admin/dashboard'
-      }, 500)
+      // Immediately navigate without timeout to avoid JS execution blocks
+      window.location.assign('/admin/dashboard')
       
     } catch (error: any) {
       toast.error(error.message || 'Failed to login')
@@ -94,7 +92,7 @@ export default function AdminLogin() {
             <div className="pt-2">
               <button type="submit" disabled={loading}
                 className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-lg shadow-indigo-500/30 text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 transition-all hover:scale-[1.02] active:scale-[0.98]">
-                {loading ? 'Authenticating...' : 'Secure Login'}
+                {loading ? 'Authenticating...' : 'Secure Login (v2)'}
               </button>
             </div>
           </form>
