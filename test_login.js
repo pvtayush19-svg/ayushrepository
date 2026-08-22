@@ -1,34 +1,39 @@
-const https = require('https');
+const { createClient } = require('@supabase/supabase-js');
+const fs = require('fs');
+const dotenv = require('dotenv');
 
-const data = JSON.stringify({
-  email: 'admin@medocare.com',
-  password: '@Yush_007*@'
-});
+// load env vars from .env
+const envConfig = dotenv.parse(fs.readFileSync('.env'));
+for (const k in envConfig) {
+  process.env[k] = envConfig[k];
+}
 
-const options = {
-  hostname: 'zcxwvgbbmmypmmvfawxo.supabase.co',
-  port: 443,
-  path: '/auth/v1/token?grant_type=password',
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpjeHd2Z2JibW15cG1tdmZhd3hvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5Nzk3NTMsImV4cCI6MjEwMjU1NTc1M30.F7EBWxAqxk2zkVp6gMgx77KEbt0T6tiZhZenQESwmPs',
-    'Content-Length': data.length
-  }
-};
+const supabase = createClient(process.env.VITE_SUPABASE_URL, process.env.VITE_SUPABASE_ANON_KEY);
 
-const req = https.request(options, res => {
-  let body = '';
-  res.on('data', d => body += d);
-  res.on('end', () => {
-    console.log('Status Code:', res.statusCode);
-    console.log('Response:', body);
+async function testLogin() {
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: 'admin@medocare.com',
+    password: '@Yush_007*@'
   });
-});
 
-req.on('error', error => {
-  console.error(error);
-});
+  if (error) {
+    console.error('Login error:', error);
+    return;
+  }
+  
+  console.log('Logged in user ID:', data.user.id);
+  
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', data.user.id)
+    .single();
 
-req.write(data);
-req.end();
+  if (profileError) {
+    console.error('Profile error:', profileError);
+  } else {
+    console.log('Profile fetched:', profile);
+  }
+}
+
+testLogin();
