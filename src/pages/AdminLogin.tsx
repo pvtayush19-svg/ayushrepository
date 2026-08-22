@@ -40,7 +40,10 @@ export default function AdminLogin() {
       }
       
       toast.success('Admin login successful. Redirecting...')
-      // Wait for AuthContext to update and trigger the useEffect redirect
+      // Wait for AuthContext to update briefly, then navigate as a fallback
+      setTimeout(() => {
+         navigate('/admin/dashboard')
+      }, 500)
       
     } catch (error: any) {
       toast.error(error.message || 'Failed to login')
