@@ -52,10 +52,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .single()
       
       if (error) throw error
-      setRole(data?.role || 'patient')
+      setRole(data?.role || null)
     } catch (error) {
-      console.error('Error fetching role, defaulting to patient:', error)
-      setRole('patient') // Important fallback if profile is missing
+      console.error('Error fetching role, clearing role for security:', error)
+      setRole(null) // Security Fix: Fail closed instead of defaulting to patient
     } finally {
       setLoading(false)
     }

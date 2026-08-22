@@ -312,13 +312,6 @@ export default function PatientDashboard() {
                            <Stethoscope size={28} />
                         </div>
                         <div className="flex flex-col items-end gap-2">
-                          <button 
-                            onClick={() => requestDoctorAmbulance(doc.profile_id)}
-                            disabled={isBooking}
-                            className="bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-xs font-bold px-3 py-1.5 rounded-full hover:bg-red-200 dark:hover:bg-red-900/50 flex items-center gap-1.5 transition-colors disabled:opacity-50 border border-red-200 dark:border-red-800 shadow-sm"
-                          >
-                            <Ambulance size={14} /> Book Ambulance
-                          </button>
                           {doc.is_available ? (
                             <span className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-[10px] font-black px-2 py-0.5 rounded-full flex items-center gap-1 border border-green-200 dark:border-green-800 shadow-sm"><span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span> ONLINE</span>
                           ) : (
@@ -334,6 +327,15 @@ export default function PatientDashboard() {
                          <p className="text-slate-600 dark:text-slate-400 text-sm flex items-center gap-3">
                            <span className="font-bold text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-lg">₹{doc.consultation_fee}</span> <span className="font-medium">Consultation Fee</span>
                          </p>
+                         <div className="pt-2">
+                           <button 
+                             onClick={() => requestDoctorAmbulance(doc.profile_id)}
+                             disabled={isBooking}
+                             className="w-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 font-bold py-2.5 rounded-xl hover:bg-red-200 dark:hover:bg-red-900/50 flex items-center justify-center gap-2 transition-colors disabled:opacity-50 border border-red-200 dark:border-red-800 shadow-sm"
+                           >
+                             <Ambulance size={18} /> Book Ambulance for Clinic
+                           </button>
+                         </div>
                       </div>
                     </div>
                     
