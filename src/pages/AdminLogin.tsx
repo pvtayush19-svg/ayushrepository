@@ -26,12 +26,17 @@ export default function AdminLogin() {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) throw error
       
-      const { data: profile } = await supabase.from('profiles').select('role').eq('id', data.user.id).single()
+      const { data: profile, error: profileError } = await supabase.from('profiles').select('role').eq('id', data.user.id).single()
+      
+      if (profileError) {
+         console.error("Profile fetch error:", profileError)
+      }
+      
       const userRole = profile?.role || 'patient';
       
       if (userRole !== 'admin') {
          await supabase.auth.signOut()
-         throw new Error("You do not have admin access.")
+         throw new Error(`You do not have admin access. Found role: ${userRole}. Error: ${profileError?.message || 'none'}`)
       }
       
       toast.success('Admin login successful. Redirecting...')
