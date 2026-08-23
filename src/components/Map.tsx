@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from 'react-leaflet'
 import L from 'leaflet'
 
 // Fix for default marker icons in react-leaflet
@@ -25,6 +25,7 @@ type MapProps = {
   onLocationSelect?: (loc: Location) => void
   interactive?: boolean
   className?: string
+  route?: { start: Location; end: Location }
 }
 
 const getIcon = (type?: 'user' | 'doctor' | 'ambulance', avatarUrl?: string) => {
@@ -82,7 +83,27 @@ function LocationPicker({ onSelect }: { onSelect: (loc: Location) => void }) {
   return null
 }
 
-export default function Map({ center = { lat: 0, lng: 0 }, markers = [], onLocationSelect, interactive = false, className = "h-[400px] w-full" }: MapProps) {
+function RouteLayer({ start, end }: { start: Location, end: Location }) {
+  const [routePoints, setRoutePoints] = useState<[number, number][]>([])
+
+  useEffect(() => {
+    if (start && end) {
+      fetch(`https://router.project-osrm.org/route/v1/driving/${start.lng},${start.lat};${end.lng},${end.lat}?overview=full&geometries=geojson`)
+        .then(r => r.json())
+        .then(data => {
+           if (data.routes && data.routes[0]) {
+              const coords = data.routes[0].geometry.coordinates; // [lng, lat]
+              setRoutePoints(coords.map((c: any) => [c[1], c[0]])) // convert to [lat, lng]
+           }
+        }).catch(err => console.error("OSRM Error:", err))
+    }
+  }, [start.lat, start.lng, end.lat, end.lng])
+
+  if (routePoints.length === 0) return null
+  return <Polyline positions={routePoints} color="#3b82f6" weight={5} opacity={0.8} />
+}
+
+export default function Map({ center = { lat: 0, lng: 0 }, markers = [], onLocationSelect, interactive = false, className = "h-[400px] w-full", route }: MapProps) {
   const [currentCenter, setCurrentCenter] = useState(center)
 
   useEffect(() => {
@@ -98,6 +119,7 @@ export default function Map({ center = { lat: 0, lng: 0 }, markers = [], onLocat
         />
         <MapUpdater center={currentCenter} />
         {interactive && onLocationSelect && <LocationPicker onSelect={onLocationSelect} />}
+        {route && <RouteLayer start={route.start} end={route.end} />}
         {markers.map((marker) => (
           <Marker key={marker.id} position={[marker.lat, marker.lng]} icon={getIcon(marker.type, marker.avatar_url)}>
             <Popup>

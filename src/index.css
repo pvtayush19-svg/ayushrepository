@@ -78,3 +78,8 @@
 .glass {
   @apply bg-white/70 dark:bg-black/70 backdrop-blur-md border border-white/20 dark:border-white/10;
 }
+
+/* Smooth marker movement for live tracking */
+.leaflet-marker-icon {
+  transition: transform 3s linear !important;
+}

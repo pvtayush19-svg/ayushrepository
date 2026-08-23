@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
-import { LogOut, Ambulance, Activity, Moon, Sun, AlertCircle, Settings, Navigation, Clock, Menu, X } from 'lucide-react'
+import { LogOut, Ambulance, Activity, Moon, Sun, AlertCircle, Settings, Navigation, Clock, Menu, X, MapPin } from 'lucide-react'
+import Map from '@/components/Map'
 
 export default function AmbulanceDashboard() {
   const { session, user } = useAuth()
@@ -18,10 +19,11 @@ export default function AmbulanceDashboard() {
   const [vehicleType, setVehicleType] = useState('Basic Life Support (BLS)')
   const [vehicleNumber, setVehicleNumber] = useState('')
   const [isAvailable, setIsAvailable] = useState(false)
-
   const [activeRequests, setActiveRequests] = useState<any[]>([])
   const [historyRequests, setHistoryRequests] = useState<any[]>([])
+  const [location, setLocation] = useState<{lat: number, lng: number} | null>(null)
   const [tripFares, setTripFares] = useState<{[key: string]: string}>({})
+  const [showMapForReq, setShowMapForReq] = useState<string | null>(null)
 
   useEffect(() => {
     fetchProfile()
@@ -29,13 +31,19 @@ export default function AmbulanceDashboard() {
 
   useEffect(() => {
     let watchId: number;
+    let lastUpdate = 0;
     if (isAvailable && user && providerDetails && navigator.geolocation) {
       watchId = navigator.geolocation.watchPosition(
         async (pos) => {
-           await supabase.from('ambulance_providers').update({
-             location_lat: pos.coords.latitude,
-             location_lng: pos.coords.longitude
-           }).eq('id', providerDetails.id)
+           const now = Date.now();
+           setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+           if (now - lastUpdate >= 3000) {
+             lastUpdate = now;
+             await supabase.from('ambulance_providers').update({
+               location_lat: pos.coords.latitude,
+               location_lng: pos.coords.longitude
+             }).eq('id', providerDetails.id)
+           }
         },
         (err) => console.warn(err),
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
@@ -302,19 +310,40 @@ export default function AmbulanceDashboard() {
                 <div key={req.id} className="bg-white dark:bg-slate-900 p-8 rounded-[2rem] shadow-lg shadow-red-500/5 dark:shadow-red-900/10 border-2 border-red-100 dark:border-red-900/40 relative overflow-hidden transition-all duration-300">
                   <div className="absolute top-0 right-0 w-64 h-64 bg-red-500/5 rounded-full blur-[80px] pointer-events-none"></div>
                   
-                  <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
-                    <div>
+                  <div className="relative z-10 flex flex-col md:flex-row justify-between items-stretch gap-6 mb-8">
+                    <div className="flex-1 flex flex-col justify-center">
                       <div className="flex items-center gap-3 mb-3">
                         <span className="bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-3 py-1 rounded-lg text-xs font-black tracking-widest uppercase flex items-center gap-2 border border-red-200 dark:border-red-800/50">
                            <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span> Emergency Dispatch
                         </span>
                         <span className="font-bold text-slate-500 dark:text-slate-400 text-sm uppercase tracking-wider">{req.status === 'en_route' ? 'In Route' : req.status}</span>
                       </div>
-                      <h4 className="font-black text-2xl text-slate-900 dark:text-white mb-1">{req.profiles?.full_name}</h4>
+                      <h4 className="font-black text-2xl text-slate-900 dark:text-white mb-1 flex items-center gap-3">
+                        {req.profiles?.full_name}
+                        {req.pickup_lat && req.pickup_lng && (
+                          <a 
+                            href={`https://www.google.com/maps/dir/?api=1&destination=${req.pickup_lat},${req.pickup_lng}`} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 px-3 py-1.5 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors"
+                          >
+                            <Navigation size={16} /> Pickup Location
+                          </a>
+                        )}
+                      </h4>
                       <p className="text-sm font-medium text-slate-600 dark:text-slate-400 flex items-center gap-2 mt-2">
-                        <Navigation size={16} className="text-red-500" />
-                        Lat: {req.pickup_lat?.toFixed(4)}, Lng: {req.pickup_lng?.toFixed(4)}
+                        <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                        Live location broadcasting to patient
                       </p>
+                      
+                      {req.pickup_lat && req.pickup_lng && (
+                        <button 
+                          onClick={() => setShowMapForReq(req.id)}
+                          className="mt-6 w-full sm:w-auto bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-200 px-6 py-3 rounded-xl font-black flex items-center justify-center gap-3 transition-all hover:scale-105 active:scale-95 shadow-lg"
+                        >
+                          <MapPin size={20} /> Show Fastest Route on Map
+                        </button>
+                      )}
                     </div>
                   </div>
                   
@@ -471,6 +500,39 @@ export default function AmbulanceDashboard() {
           )}
         </div>
       </main>
+
+      {/* Full Screen Live Route Map Modal */}
+      {showMapForReq && (
+        <div className="fixed inset-0 z-[100] flex flex-col bg-slate-900/90 backdrop-blur-md p-4 sm:p-8 animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-900 flex-1 rounded-[2rem] overflow-hidden flex flex-col shadow-2xl relative border border-slate-200 dark:border-slate-800 animate-in zoom-in-95 duration-300">
+            <div className="p-4 sm:p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900 z-10 relative">
+              <h3 className="font-black text-xl sm:text-2xl text-slate-900 dark:text-white flex items-center gap-3">
+                 <Navigation className="text-red-500" size={28} /> Live Shortest Route to Patient
+              </h3>
+              <button onClick={() => setShowMapForReq(null)} className="p-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full text-slate-600 dark:text-slate-300 transition-colors hover:rotate-90">
+                <X size={24} />
+              </button>
+            </div>
+            <div className="flex-1 bg-slate-100 dark:bg-slate-800 relative z-0">
+              {(() => {
+                const r = activeRequests.find(x => x.id === showMapForReq);
+                if (!r || !r.pickup_lat || !r.pickup_lng) return <div className="p-8 text-center text-slate-500 font-bold">No location data available</div>;
+                return (
+                  <Map 
+                    className="w-full h-full"
+                    center={{ lat: r.pickup_lat, lng: r.pickup_lng }} 
+                    route={location ? { start: location, end: { lat: r.pickup_lat, lng: r.pickup_lng } } : undefined}
+                    markers={[
+                      ...(location ? [{ id: 'amb', lat: location.lat, lng: location.lng, title: 'Ambulance (You)', type: 'ambulance' as const }] : []),
+                      { id: 'pat', lat: r.pickup_lat, lng: r.pickup_lng, title: 'Patient Pickup', type: 'user' as const }
+                    ]}
+                  />
+                )
+              })()}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -26,6 +26,7 @@ export default function PatientDashboard() {
   const [isDarkMode, setIsDarkMode] = useState(() => document.documentElement.classList.contains('dark'))
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isBooking, setIsBooking] = useState(false)
+  const [isAdjustingLocation, setIsAdjustingLocation] = useState(false)
 
   // Video call states
   const [incomingCall, setIncomingCall] = useState<{ callerId: string, targetId: string, callerName: string } | null>(null)
@@ -437,6 +438,10 @@ export default function PatientDashboard() {
                       <Map 
                         center={location || { lat: 20.5937, lng: 78.9629 }} 
                         className="h-full w-full rounded-[2rem] border-[6px] border-slate-100 dark:border-slate-800 shadow-inner"
+                        route={location && activeBooking.ambulance_providers?.location_lat ? {
+                          start: {lat: activeBooking.ambulance_providers.location_lat, lng: activeBooking.ambulance_providers.location_lng},
+                          end: location
+                        } : undefined}
                         markers={[
                           ...(location ? [{ id: 'user', lat: location.lat, lng: location.lng, title: 'Pickup Location', type: 'user' as const }] : []),
                           ...(activeBooking.ambulance_providers?.location_lat ? [{ id: 'amb', lat: activeBooking.ambulance_providers.location_lat, lng: activeBooking.ambulance_providers.location_lng, title: 'Ambulance', type: 'ambulance' as const }] : [])
@@ -463,11 +468,17 @@ export default function PatientDashboard() {
                             </div>
                           </div>
                           <div>
-                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Your GPS Pickup Location</label>
+                            <div className="flex justify-between items-end mb-2">
+                              <label className="block text-sm font-bold text-slate-700 dark:text-slate-300">Your GPS Pickup Location</label>
+                              <button onClick={() => setIsAdjustingLocation(!isAdjustingLocation)} className={`text-xs font-bold px-3 py-1 rounded-full border transition-all ${isAdjustingLocation ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800' : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
+                                {isAdjustingLocation ? 'Tap map to set pin (Done)' : 'Adjust Location'}
+                              </button>
+                            </div>
                             <div className="relative">
                                <MapPin className="absolute left-4 top-4 text-red-500" size={20} />
                                <input type="text" value={location ? `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}` : 'Locating...'} className="w-full pl-12 pr-4 py-4 border border-slate-200 dark:border-slate-800 rounded-2xl bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 font-medium focus:outline-none focus:ring-2 focus:ring-red-500/50 transition-all" readOnly />
                             </div>
+                            {isAdjustingLocation && <p className="text-xs font-medium text-indigo-600 dark:text-indigo-400 mt-2">Click anywhere on the map to change your pickup location.</p>}
                           </div>
                         </div>
                         <div className="space-y-3 mt-8">
@@ -538,6 +549,8 @@ export default function PatientDashboard() {
               <Map 
                 className="h-[400px] md:h-[700px] w-full rounded-[2rem] border-[6px] border-slate-50 dark:border-slate-800 shadow-inner"
                 center={location || { lat: 20.5937, lng: 78.9629 }} 
+                interactive={isAdjustingLocation}
+                onLocationSelect={(loc) => { if (isAdjustingLocation) setLocation(loc) }}
                 markers={[
                   ...(location ? [{
                     id: 'user',
