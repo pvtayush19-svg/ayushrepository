@@ -204,7 +204,7 @@ export default function AmbulanceDashboard() {
           <img src="/logo.jpg" alt="Logo" className="w-8 h-8 rounded-full object-cover" /> MedoRescue
         </h1>
         <div className="flex items-center gap-4">
-          <NotificationBell userId={user.id} />
+          {user && <NotificationBell userId={user.id} />}
           <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
             {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
@@ -302,7 +302,7 @@ export default function AmbulanceDashboard() {
             </div>
             
             <div className="hidden md:block">
-               <NotificationBell userId={user.id} />
+               {user && <NotificationBell userId={user.id} />}
             </div>
             
             {activeRequests.length > 0 && (
