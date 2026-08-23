@@ -46,12 +46,23 @@ export default function AdminDashboard() {
     await supabase.auth.signOut()
   }
 
-  const toggleVerification = async (table: 'doctors' | 'ambulance_providers', id: string, currentStatus: boolean) => {
-    const { error } = await supabase.from(table).update({ is_verified: !currentStatus }).eq('id', id)
+  const toggleVerification = async (table: 'doctors' | 'ambulance_providers', id: string, profileId: string, currentStatus: boolean) => {
+    const newStatus = !currentStatus;
+    const { error } = await supabase.from(table).update({ is_verified: newStatus }).eq('id', id)
     if (error) {
       toast.error('Failed to update status')
     } else {
       toast.success('Status updated successfully')
+      
+      if (newStatus) {
+        // Send a notification
+        await supabase.from('notifications').insert({
+          user_id: profileId,
+          title: 'Account Verified',
+          message: 'Congratulations! Your application has been approved by the Administrator.'
+        });
+      }
+      
       fetchData()
     }
   }
@@ -221,7 +232,7 @@ export default function AdminDashboard() {
                         <td className="p-5 text-right">
                           <div className="flex justify-end gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                             <button 
-                              onClick={() => toggleVerification('doctors', doc.id, doc.is_verified)}
+                              onClick={() => toggleVerification('doctors', doc.id, doc.profile_id, doc.is_verified)}
                               className={`px-4 py-2 rounded-xl font-bold text-sm transition-all shadow-sm ${doc.is_verified ? 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white' : 'bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-indigo-500/25 dark:bg-indigo-500 dark:hover:bg-indigo-600'}`}>
                               {doc.is_verified ? 'Revoke' : 'Approve'}
                             </button>
@@ -257,7 +268,7 @@ export default function AdminDashboard() {
                         <td className="p-5 text-right">
                           <div className="flex justify-end gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                             <button 
-                              onClick={() => toggleVerification('ambulance_providers', amb.id, amb.is_verified)}
+                              onClick={() => toggleVerification('ambulance_providers', amb.id, amb.profile_id, amb.is_verified)}
                               className={`px-4 py-2 rounded-xl font-bold text-sm transition-all shadow-sm ${amb.is_verified ? 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white' : 'bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-indigo-500/25 dark:bg-indigo-500 dark:hover:bg-indigo-600'}`}>
                               {amb.is_verified ? 'Revoke' : 'Approve'}
                             </button>

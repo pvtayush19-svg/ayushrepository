@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
-import { LogOut, User, Activity, PhoneIncoming, MessageCircle, Moon, Sun, UserCheck, Stethoscope, Mail, Menu, X } from 'lucide-react'
+import { LogOut, CheckCircle2, XCircle, Clock, Video, User, Star, Activity, Plus, X, Upload, Mail, UserCheck, Moon, Sun, Menu, MessageCircle, PhoneIncoming, Stethoscope } from 'lucide-react'
 import VideoCallDialog from '@/components/VideoCallDialog'
+import NotificationBell from '@/components/NotificationBell'
 import DoctorChatDialog from '@/components/DoctorChatDialog'
 
 export default function DoctorDashboard() {
@@ -239,9 +240,12 @@ export default function DoctorDashboard() {
         <h1 className="text-xl font-black bg-gradient-to-r from-indigo-600 to-purple-500 dark:from-indigo-400 dark:to-purple-400 bg-clip-text text-transparent flex items-center gap-2">
           <img src="/logo.jpg" alt="Logo" className="w-8 h-8 rounded-full object-cover" /> MedoDoctor
         </h1>
-        <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-          {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
+        <div className="flex items-center gap-4">
+          <NotificationBell userId={user.id} />
+          <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
       </div>
 
       {/* Sidebar Navigation */}
@@ -321,11 +325,11 @@ export default function DoctorDashboard() {
           
           <div className="flex justify-between items-end mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div>
-              <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight mb-2">Welcome, Dr. {profile?.full_name}</h2>
-              <div className="flex items-center gap-3">
+              <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight mb-2">Provider Portal</h2>
+              <div className="flex items-center gap-3 mt-4">
                 {doctorDetails?.is_verified ? (
                   <span className="flex items-center gap-1.5 text-sm font-bold text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-3 py-1 rounded-full border border-green-200 dark:border-green-800">
-                    <span className="w-2 h-2 rounded-full bg-green-500"></span> Verified Practitioner
+                    <span className="w-2 h-2 rounded-full bg-green-500"></span> Verified Medical Professional
                   </span>
                 ) : (
                    <span className="flex items-center gap-1.5 text-sm font-bold text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 px-3 py-1 rounded-full border border-yellow-200 dark:border-yellow-800">
@@ -333,6 +337,10 @@ export default function DoctorDashboard() {
                   </span>
                 )}
               </div>
+            </div>
+            
+            <div className="hidden md:block">
+               <NotificationBell userId={user.id} />
             </div>
           </div>
 

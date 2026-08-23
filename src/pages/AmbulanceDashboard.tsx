@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
 import { LogOut, Ambulance, Activity, Moon, Sun, AlertCircle, Settings, Navigation, Clock, Menu, X, MapPin } from 'lucide-react'
 import Map from '@/components/Map'
+import NotificationBell from '@/components/NotificationBell'
 
 export default function AmbulanceDashboard() {
   const { session, user } = useAuth()
@@ -202,9 +203,12 @@ export default function AmbulanceDashboard() {
         <h1 className="text-xl font-black bg-gradient-to-r from-red-600 to-orange-500 dark:from-red-500 dark:to-orange-400 bg-clip-text text-transparent flex items-center gap-2">
           <img src="/logo.jpg" alt="Logo" className="w-8 h-8 rounded-full object-cover" /> MedoRescue
         </h1>
-        <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-          {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
+        <div className="flex items-center gap-4">
+          <NotificationBell userId={user.id} />
+          <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
       </div>
 
       {/* Sidebar Navigation */}
@@ -295,6 +299,10 @@ export default function AmbulanceDashboard() {
                   </span>
                 )}
               </div>
+            </div>
+            
+            <div className="hidden md:block">
+               <NotificationBell userId={user.id} />
             </div>
             
             {activeRequests.length > 0 && (
