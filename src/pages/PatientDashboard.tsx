@@ -149,11 +149,15 @@ export default function PatientDashboard() {
   }
 
   const handleBookAmbulance = async () => {
-    if (!user || !selectedAmbulance) return
+    if (!user || !selectedAmbulance || isBooking) return
+    setIsBooking(true)
     if (!location) {
       toast.error("Waiting for GPS location...")
+      setIsBooking(false)
       return
     }
+
+    const toastId = toast.loading("Requesting emergency ambulance...")
 
     const { data, error } = await supabase.from('ambulance_bookings').insert([{
       patient_id: user.id,
@@ -164,11 +168,14 @@ export default function PatientDashboard() {
     }]).select().single()
 
     if (error) {
-      toast.error("Error booking ambulance: " + error.message)
+      toast.error("Error booking ambulance: " + error.message, { id: toastId })
     } else {
-      toast.success("Ambulance requested successfully!")
+      toast.success("Ambulance requested successfully!", { id: toastId })
       fetchActiveBooking()
     }
+    
+    // Slight delay to prevent immediate re-clicks even if it succeeds
+    setTimeout(() => setIsBooking(false), 2000)
   }
 
   const requestDoctorAmbulance = async (doctorId: string) => {
@@ -212,10 +219,10 @@ export default function PatientDashboard() {
         fetchActiveBooking();
         setActiveTab('ambulances');
       }
-      setIsBooking(false);
+      setTimeout(() => setIsBooking(false), 2000);
     } catch (err: any) {
       toast.error(err.message || "An error occurred");
-      setIsBooking(false);
+      setTimeout(() => setIsBooking(false), 2000);
     }
   };
 
