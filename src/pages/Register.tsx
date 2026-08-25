@@ -48,7 +48,7 @@ export default function Register() {
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
         <div className="w-24 h-24 mx-auto bg-white p-1 rounded-full shadow-xl shadow-blue-500/10 mb-6">
-          <img src="/logo.jpg" alt="MedoCare Logo" className="w-full h-full rounded-full object-cover" />
+          <img src="/logo.jpg" alt="MedoCare Logo" className="w-full h-full object-contain" />
         </div>
         <h2 className="text-center text-4xl font-black text-slate-900 tracking-tight">Join MedoCare</h2>
         <p className="mt-3 text-center text-base text-slate-600 font-medium">Create your account to get started</p>

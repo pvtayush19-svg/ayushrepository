@@ -201,7 +201,7 @@ export default function AmbulanceDashboard() {
       {/* Mobile Header */}
       <div className="md:hidden flex items-center justify-between p-4 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30">
         <h1 className="text-xl font-black bg-gradient-to-r from-red-600 to-orange-500 dark:from-red-500 dark:to-orange-400 bg-clip-text text-transparent flex items-center gap-2">
-          <img src="/logo.jpg" alt="Logo" className="w-8 h-8 rounded-full object-cover" /> MedoRescue
+          <img src="/logo.jpg" alt="Logo" className="w-8 h-8 object-contain" /> MedoRescue
         </h1>
         <div className="flex items-center gap-4">
           {user && <NotificationBell userId={user.id} />}
@@ -216,7 +216,7 @@ export default function AmbulanceDashboard() {
         <div>
           <div className="p-8 pb-4">
             <h1 className="text-3xl font-black bg-gradient-to-r from-red-600 to-orange-500 dark:from-red-500 dark:to-orange-400 bg-clip-text text-transparent flex items-center gap-3 tracking-tight">
-              <img src="/logo.jpg" alt="Logo" className="w-10 h-10 rounded-full object-cover" /> MedoRescue
+              <img src="/logo.jpg" alt="Logo" className="w-10 h-10 object-contain" /> MedoRescue
             </h1>
             <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-2 ml-1">Ambulance Command Center</p>
           </div>

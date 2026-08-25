@@ -94,7 +94,7 @@ export default function AdminDashboard() {
       {/* Mobile Header */}
       <div className="md:hidden flex items-center justify-between p-4 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30">
         <h1 className="text-xl font-black bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 bg-clip-text text-transparent flex items-center gap-2">
-          <img src="/logo.jpg" alt="Logo" className="w-8 h-8 rounded-full object-cover" /> MedoAdmin
+          <img src="/logo.jpg" alt="Logo" className="w-8 h-8 object-contain" /> MedoAdmin
         </h1>
         <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
           {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -106,7 +106,7 @@ export default function AdminDashboard() {
         <div>
           <div className="p-8">
             <h1 className="text-3xl font-black bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 bg-clip-text text-transparent flex items-center gap-3 tracking-tight">
-              <img src="/logo.jpg" alt="Logo" className="w-10 h-10 rounded-full object-cover" /> MedoAdmin
+              <img src="/logo.jpg" alt="Logo" className="w-10 h-10 object-contain" /> MedoAdmin
             </h1>
             <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-2 ml-1">Platform Control Center</p>
           </div>
