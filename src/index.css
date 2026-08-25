@@ -75,6 +75,22 @@
   }
 }
 
+/* Logo Blending */
+img[src="/logo.jpg"] {
+  mix-blend-mode: multiply;
+  filter: contrast(1.1);
+}
+
+.dark img[src="/logo.jpg"] {
+  mix-blend-mode: normal;
+  background-color: white; /* Ensure the logo's dark text is visible in dark mode by keeping its light background */
+  border-radius: 50%;
+}
+
+.glass-panel {
+  @apply bg-white/70 dark:bg-black/70 backdrop-blur-md border border-white/20 dark:border-white/10;
+}
+
 .glass {
   @apply bg-white/70 dark:bg-black/70 backdrop-blur-md border border-white/20 dark:border-white/10;
 }
