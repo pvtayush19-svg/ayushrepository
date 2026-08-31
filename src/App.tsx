@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
 import { Toaster } from "sonner"
 import { AuthProvider } from "@/contexts/AuthContext"
 import { ProtectedRoute } from "@/components/ProtectedRoute"
+import { ErrorBoundary } from "@/components/ErrorBoundary"
 
 import Login from "@/pages/Login"
 import AdminLogin from "@/pages/AdminLogin"
@@ -38,7 +39,7 @@ export default function App() {
 
           {/* Doctor Routes */}
           <Route element={<ProtectedRoute allowedRoles={['doctor']} />}>
-            <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
+            <Route path="/doctor/dashboard" element={<ErrorBoundary><DoctorDashboard /></ErrorBoundary>} />
           </Route>
 
           {/* Ambulance Routes */}
