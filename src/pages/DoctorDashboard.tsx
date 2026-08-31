@@ -106,7 +106,7 @@ export default function DoctorDashboard() {
       .select('*, profiles:patient_id(*)')
       .eq('doctor_id', user.id)
     if (convData) {
-      setPatients(convData.map(c => c.profiles))
+      setPatients(convData.map(c => c.profiles).filter(Boolean))
     }
 
     setLoading(false)
